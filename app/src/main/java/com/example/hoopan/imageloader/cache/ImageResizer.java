@@ -1,4 +1,4 @@
-package com.example.hoopan.imageloader;
+package com.example.hoopan.imageloader.cache;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
