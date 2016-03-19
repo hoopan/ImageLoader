@@ -158,6 +158,12 @@ public class ImageLoader {
         return bitmap;
     }
 
+    private Bitmap loadBitmapFromMemCache(String url){
+        final String key = hashKeyFormUrl(url);
+        Bitmap bitmap = getBitmapFromMemCache(key);
+        return bitmap;
+    }
+
 
     private String hashKeyFormUrl(String url){
 
