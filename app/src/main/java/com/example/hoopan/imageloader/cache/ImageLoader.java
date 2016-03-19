@@ -3,6 +3,7 @@ package com.example.hoopan.imageloader.cache;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.nfc.Tag;
 import android.os.Build;
 import android.os.Environment;
@@ -164,6 +165,57 @@ public class ImageLoader {
         return bitmap;
     }
 
+    public Bitmap loadBitmap(String uri,int reqWidth,int reqHeight){
+        Bitmap bitmap = loadBitmapFromMemCache(uri);
+        if (bitmap != null){
+            Log.d(TAG,"loadBitmapFromMemCache uri:" + uri);
+            return bitmap;
+        }
+
+        try {
+            bitmap = loadBitmapFromDiskCache(uri,reqWidth,reqHeight);
+            if (bitmap != null){
+                Log.d(TAG,"loadBitmapFromDiskCache,url:" + uri);
+                return bitmap;
+            }
+
+            bitmap = loadBitmapFromHttp(uri,reqWidth,reqHeight);
+            Log.d(TAG,"loadBitmapFromHttp, uri:" + uri);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (bitmap == null && !mIsDiskLruCacheCreated){
+            Log.w(TAG,"DiskLruCache 没创建");
+            bitmap = downloadBitmapFromUrl(uri);
+        }
+
+        return bitmap;
+    }
+
+    private Bitmap downloadBitmapFromUrl(String urlString){
+        Bitmap bitmap = null;
+        HttpURLConnection urlConnection = null;
+        BufferedInputStream in = null;
+
+        try {
+            final URL url = new URL(urlString);
+            urlConnection = (HttpURLConnection) url.openConnection();
+            in = new BufferedInputStream(urlConnection.getInputStream(),IO_BUFFER_SIZE);
+            bitmap = BitmapFactory.decodeStream(in);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            if (urlConnection != null){
+                urlConnection.disconnect();
+            }
+            ImageLoaderUtils.close(in);
+        }
+        return bitmap;
+    }
 
     private String hashKeyFormUrl(String url){
 
